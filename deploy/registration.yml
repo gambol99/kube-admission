@@ -1,0 +1,26 @@
+---
+apiVersion: admissionregistration.k8s.io/v1beta1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: kube-admission.io
+webhooks:
+- name: kube-admission.io
+  failurePolicy: Ignore
+  rules:
+  - operations:
+    - CREATE
+    - UPDATE
+    apiGroups:
+    - "*"
+    apiVersions:
+    - "*"
+    resources:
+    - deployments
+    - ingresses
+    - pods
+    - services
+  clientConfig:
+    service:
+      namespace: kube-system
+      name: kube-admission
+    caBundle: ${CA_BUNDLE}

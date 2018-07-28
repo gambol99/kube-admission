@@ -1,0 +1,32 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kube-admission
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: kube-admission
+      annotations:
+        repository: https://github.com/gambol99/keycloak-kube-admission
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      volumes: []
+      containers:
+        - name: kube-admission
+          image: quay.io/gambol99/kube-admission:latest
+          imagePullPolicy: Always
+          args: []
+          env:
+            - name: PROXY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: openid
+                  key: client.secret
+          securityContext:
+            readOnlyRootFilesystem: true
