@@ -24,12 +24,12 @@ golang:
 build: golang
 	@echo "--> Compiling the project"
 	@mkdir -p bin
-	go build -ldflags "${LFLAGS}" -o bin/${NAME}
+	go build -ldflags "${LFLAGS}" -o bin/${NAME} cmd/kube-admission/*.go
 
 static: golang deps
 	@echo "--> Compiling the static binary"
 	@mkdir -p bin
-	CGO_ENABLED=0 GOOS=linux go build -a -tags netgo -ldflags "-w ${LFLAGS}" -o bin/${NAME}
+	CGO_ENABLED=0 GOOS=linux go build -a -tags netgo -ldflags "-w ${LFLAGS}" -o bin/${NAME} cmd/kube-admission/*.go
 
 docker-build:
 	@echo "--> Compiling the project"
@@ -82,7 +82,7 @@ authors:
 
 dep-install:
 	@echo "--> Installing dependencies"
-	@dep ensure
+	@dep ensure -v
 
 deps:
 	@echo "--> Installing build dependencies"
@@ -94,7 +94,7 @@ vet:
 	@go tool vet 2>/dev/null ; if [ $$? -eq 3 ]; then \
 		go get golang.org/x/tools/cmd/vet; \
 	fi
-	@go tool vet $(VETARGS) *.go
+	@go vet $(VETARGS) $(PACKAGES)
 
 lint:
 	@echo "--> Running golint"
@@ -117,8 +117,12 @@ verify:
 	gometalinter --disable=errcheck --disable=gocyclo --disable=gas --disable=aligncheck --errors
 
 format:
-	@echo "--> Running go fmt"
-	@gofmt -s -w *.go
+	@echo "--> Running gofmt check"
+	@gofmt -s -l ./... | grep -q \.go ; if [ $$? -eq 0 ]; then \
+      echo "You need to runn the make format, we have file unformatted"; \
+      gofmt -s -l *.go; \
+      exit 1; \
+    fi
 
 bench:
 	@echo "--> Running go bench"
@@ -146,7 +150,7 @@ test:
 	@if [ ! -d "vendor" ]; then \
 		make dep-install; \
   fi
-	@go test -v
+	@go test -v ${PACKAGES}
 	@$(MAKE) golang
 	@$(MAKE) gofmt
 	@$(MAKE) spelling

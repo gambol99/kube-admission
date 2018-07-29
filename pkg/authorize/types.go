@@ -36,14 +36,26 @@ type Authorizer interface {
 	Admit(context.Context, metav1.Object, store.Store) (*Decision, error)
 }
 
-// Reason is reason why somethint was rejected
+// Filter is used to control what a authorizer wishes to see
+type Filter struct {
+	// Group is the API group of the resource
+	Group string `yaml:"group" json:"group"`
+	// Kind is the kind of resource
+	Kind string `yaml:"kind" json:"kind"`
+	// Operations is the type of operations i.e. DELETE, UPDATE, CREATE etc
+	Operations []string `yaml:"operations" json:"operations"`
+	// Version is the API version of the resource
+	Version string `yaml:"version" json:"version"`
+}
+
+// Reason is the reason why something was rejected
 type Reason struct {
 	// Field is the offending field
 	Field string
 	// Message is a human readable reason
 	Message string
 	// Value is value which was rejected
-	Value string
+	Value interface{}
 }
 
 // Decision is the decision of the authorizer

@@ -22,23 +22,12 @@ limitations under the License.
 package store
 
 /*
-  # get a namespace from the store
-	name = "core/v1/namespace/default";
-	if (store.has(name)) {
-		ns = store.get(name);
-		annotations = ns.annotations;
-	}
-*/
-
-/*
   # list the namespaces in the store
 	items = store.list("namespaces");
-
 	# list all the services in a namespace
 	store.namespace("default").kind("pods").get("pod1")
 	store.namespace("all").kind("services").list
 	store.kind("nodes").list()
 	store.kind("namespaces).get("default")
 	store.kind("namespace").set("
-
 */

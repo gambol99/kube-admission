@@ -67,7 +67,6 @@ func TestMultipleInformers(t *testing.T) {
 
 	// @step: create the namespace informer
 	assert.NoError(t, New(ctx, &Config{
-		ErrorCh:  errorCh,
 		Factory:  factory,
 		Resource: "v1/namespaces",
 		AddFunc: func(version schema.GroupVersionResource, object metav1.Object) {
@@ -77,7 +76,6 @@ func TestMultipleInformers(t *testing.T) {
 	}))
 
 	assert.NoError(t, New(ctx, &Config{
-		ErrorCh:  errorCh,
 		Factory:  factory,
 		Resource: "v1/pods",
 		AddFunc: func(version schema.GroupVersionResource, object metav1.Object) {
@@ -110,17 +108,20 @@ func TestInformerCreate(t *testing.T) {
 	doneCh := make(chan struct{}, 0)
 	errorCh := make(chan error, 0)
 	client := newTestInformer(t, &Config{
-		ErrorCh:  errorCh,
 		Resource: "v1/namespaces",
 		AddFunc: func(version schema.GroupVersionResource, object metav1.Object) {
 			require.NotNil(t, object)
 			assert.Equal(t, "default", object.GetName())
 			doneCh <- struct{}{}
 		},
+		ErrorFunc: func(version schema.GroupVersionResource, err error) {
+			errorCh <- err
+		},
 	}, ctx)
 
 	// @step: add a namespace and check we get a update
-	_, err := client.Core().Namespaces().Create(&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "default"}})
+	ns, err := client.Core().Namespaces().Create(&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: "default"}})
+	require.NotNil(t, ns)
 	require.NoError(t, err)
 
 	select {
@@ -140,7 +141,6 @@ func TestInformerUpdate(t *testing.T) {
 	doneCh := make(chan struct{}, 0)
 	errorCh := make(chan error, 0)
 	client := newTestInformer(t, &Config{
-		ErrorCh:  errorCh,
 		Resource: "v1/namespaces",
 		AddFunc: func(version schema.GroupVersionResource, object metav1.Object) {
 			updated++
@@ -184,7 +184,6 @@ func TestInformerDelete(t *testing.T) {
 	doneCh := make(chan struct{}, 0)
 	errorCh := make(chan error, 0)
 	client := newTestInformer(t, &Config{
-		ErrorCh:  errorCh,
 		Resource: "v1/namespaces",
 		DeleteFunc: func(version schema.GroupVersionResource, object metav1.Object) {
 			require.NotNil(t, object)

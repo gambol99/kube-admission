@@ -33,6 +33,13 @@ var (
 		},
 		[]string{"resource"},
 	)
+	errorCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "informer_error_counter",
+			Help: "The number of error which the informer has seen per resource",
+		},
+		[]string{"resource"},
+	)
 	updateCounter = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "informer_update_counter",
@@ -45,5 +52,6 @@ var (
 func init() {
 	prometheus.MustRegister(addCounter)
 	prometheus.MustRegister(deleteCounter)
+	prometheus.MustRegister(errorCounter)
 	prometheus.MustRegister(updateCounter)
 }

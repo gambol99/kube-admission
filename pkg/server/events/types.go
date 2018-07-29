@@ -14,34 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package server
+package events
 
 import (
-	"context"
+	admission "k8s.io/api/admission/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const (
-	// The request has been accepted
-	actionAccepted = "accept"
-	// The request has been refused
-	actionDenied = "deny"
-	// The request has cause an error
-	actionErrored = "error"
-)
-
-// New creates and returns an admission controller
-func New(c *Config) (*Admission, error) {
-
-	return &Admission{}, nil
+// Event is a denial event
+type Event struct {
+	// Detail is the detail about the error
+	Detail string
+	// Object is the decoded object
+	Object metav1.Object
+	// Review is a reference to the review
+	Review *admission.AdmissionRequest
 }
 
-// health provides information on the health of the service
-func (a *Admission) health() ([]byte, error) {
-	return []byte("ok"), nil
-}
-
-// Run is responsible for starting the admission controller
-func (a *Admission) Run(ctc context.Context) error {
-
-	return nil
+// Sink is the implementation for a events consumer
+type Sink interface {
+	// Send is responsible is sending messages
+	Send(*Event) error
 }

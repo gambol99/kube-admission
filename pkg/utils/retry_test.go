@@ -14,34 +14,33 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package server
+package utils
 
 import (
-	"context"
+	"errors"
+	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
-const (
-	// The request has been accepted
-	actionAccepted = "accept"
-	// The request has been refused
-	actionDenied = "deny"
-	// The request has cause an error
-	actionErrored = "error"
-)
-
-// New creates and returns an admission controller
-func New(c *Config) (*Admission, error) {
-
-	return &Admission{}, nil
+func TestRetryWithFailures(t *testing.T) {
+	counter := 0
+	fn := func() error {
+		counter++
+		return errors.New("a failure")
+	}
+	err := Retry(3, time.Millisecond*1, false, fn)
+	assert.Error(t, err)
+	assert.Equal(t, 3, counter)
 }
 
-// health provides information on the health of the service
-func (a *Admission) health() ([]byte, error) {
-	return []byte("ok"), nil
-}
-
-// Run is responsible for starting the admission controller
-func (a *Admission) Run(ctc context.Context) error {
-
-	return nil
+func TestRetryWithOK(t *testing.T) {
+	counter := 0
+	fn := func() error {
+		return nil
+	}
+	err := Retry(3, time.Millisecond*1, false, fn)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, counter)
 }

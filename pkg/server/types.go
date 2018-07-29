@@ -16,7 +16,11 @@ limitations under the License.
 
 package server
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/gambol99/kube-admission/pkg/authorize"
+)
 
 // Config is the configuration for the service
 type Config struct {
@@ -28,20 +32,10 @@ type Config struct {
 	Listen string `yaml:"listen" json:"listen"`
 	// TLSCert is the certificate to use for the service
 	TLSCert string `yaml:"tls-cert" json:"tls-cert"`
+	// TLSCA is the certificate authority
+	TLSCA string `json:"tls-ca" yaml:"tls-ca"`
 	// TLSPrivateKey is the private key to use
 	TLSPrivateKey string `yaml:"tls-private-key" json:"tls-private-key"`
-}
-
-// Filter is used to control what a authorizer wishes to see
-type Filter struct {
-	// Group is the API group of the resource
-	Group string `yaml:"group" json:"group"`
-	// Kind is the kind of resource
-	Kind string `yaml:"kind" json:"kind"`
-	// Operations is the type of operations i.e. DELETE, UPDATE, CREATE etc
-	Operations []string `yaml:"operations" json:"operations"`
-	// Version is the API version of the resource
-	Version string `yaml:"version" json:"version"`
 }
 
 // Admission is the wrapper for the admission controller
@@ -49,5 +43,5 @@ type Admission struct {
 	sync.RWMutex
 
 	// authorizers is a collection of authorization scripts
-	authorizers []Authorizer
+	authorizers []authorize.Authorizer
 }

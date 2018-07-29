@@ -18,6 +18,9 @@ package utils
 
 import (
 	"context"
+
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 // requireID is a request unique id
@@ -65,4 +68,14 @@ func Unique(e []string) []string {
 	}
 
 	return list
+}
+
+// GetKubernetesClient returns a kubernetes api client for us
+func GetKubernetesClient() (kubernetes.Interface, error) {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	return kubernetes.NewForConfig(config)
 }

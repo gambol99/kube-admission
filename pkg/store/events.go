@@ -17,12 +17,14 @@ limitations under the License.
 package store
 
 import (
+	"github.com/gambol99/kube-admission/pkg/store/informer"
+
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// handleObject is called by an informer when an resource has been changed
+// handleObject is called by an informer when an resource has been changed, added or deleted
 func (s *storeImpl) handleObject(version schema.GroupVersionResource, before, object metav1.Object, eventType EventType) {
 	fields := log.Fields{
 		"group":     version.Group,
@@ -34,7 +36,7 @@ func (s *storeImpl) handleObject(version schema.GroupVersionResource, before, ob
 	}
 	if eventType == Deleted {
 		deleteCounter.Inc()
-		if _, err := s.Namespace(object.GetNamespace()).Kind(version.Resource).Delete(object.GetName()); err != nil {
+		if err := s.Namespace(object.GetNamespace()).Kind(version.Resource).Delete(object.GetName()); err != nil {
 			fields["error"] = err.Error()
 			log.WithFields(fields).Error("unable to delete from the store")
 		}
@@ -51,42 +53,20 @@ func (s *storeImpl) handleObject(version schema.GroupVersionResource, before, ob
 
 // handleEventListeners is responsible for handling the event listeners
 func (s *storeImpl) handleEventListeners(version schema.GroupVersionResource, before, object metav1.Object, eventType EventType) {
-	fields := log.Fields{
-		"group":     version.Group,
-		"kind":      version.Resource,
-		"name":      object.GetName(),
-		"namespace": object.GetNamespace(),
-		"resource":  object.GetResourceVersion(),
-		"version":   version.Version,
-	}
 
 	// @step: check if anyone is listening to this resource
-	listeners, found := s.listeners[s.versionKey(version)]
+	listeners, found := s.listeners[informer.NiceVersion(version)]
 	if !found {
 		return
 	}
 
 	// @step: fire of the events to the listeners
-	event := &Event{
-		After:   object,
-		Before:  before,
-		Type:    eventType,
-		Version: version,
-	}
+	event := &Event{After: object, Before: before, Type: eventType, Version: version}
 
 	for _, listener := range listeners {
 		if listener.Type != eventType {
 			continue
 		}
-		go func() {
-			defer func() {
-				if r := recover(); r != nil {
-					fields["error"] = r
-					log.WithFields(fields).Error("failed to notifiy listener")
-				}
-			}()
-
-			listener.Channel <- event
-		}()
+		go func() { listener.Channel <- event }()
 	}
 }

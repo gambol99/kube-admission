@@ -80,10 +80,9 @@ func TestStoreGet(t *testing.T) {
 	node.SetName("node1")
 	s.Kind("nodes").Set("node1", node)
 
-	v, found, err := s.Kind("nodes").Get("node1")
+	v, err := s.Kind("nodes").Get("node1")
 	require.NoError(t, err)
 	require.NotNil(t, v)
-	require.True(t, found)
 	assert.Equal(t, "node1", v.GetName())
 }
 
@@ -94,10 +93,9 @@ func TestStoreSet(t *testing.T) {
 	node.SetName("node1")
 	s.Kind("nodes").Set("node1", node)
 
-	v, found, err := s.Kind("nodes").Get("node1")
+	v, err := s.Kind("nodes").Get("node1")
 	require.NoError(t, err)
 	require.NotNil(t, v)
-	require.True(t, found)
 	assert.Equal(t, "node1", v.GetName())
 }
 
@@ -152,9 +150,9 @@ func TestStoreActions(t *testing.T) {
 				}
 			},
 			Checks: func(i int) {
-				found, err := s.Kind("namespaces").Has("default")
-				require.True(t, found)
+				v, err := s.Kind("namespaces").Has("default")
 				require.NoError(t, err)
+				require.NotNil(t, v)
 				items, err := s.Namespace("default").Kind("pods").List()
 				assert.NoError(t, err)
 				assert.Equal(t, 2, len(items))
@@ -173,6 +171,9 @@ func TestStoreActions(t *testing.T) {
 		{
 			Actions: func() {
 				s.Kind("namespaces").Delete("default")
+				for _, x := range []string{"test0", "test1"} {
+					s.Namespace("default").Kind("pods").Delete(x)
+				}
 			},
 			Checks: func(i int) {
 				found, err := s.Kind("namespaces").Has("default")

@@ -14,34 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package server
+package utils
 
 import (
-	"context"
+	"errors"
+	"time"
+
+	"github.com/jpillora/backoff"
 )
 
-const (
-	// The request has been accepted
-	actionAccepted = "accept"
-	// The request has been refused
-	actionDenied = "deny"
-	// The request has cause an error
-	actionErrored = "error"
-)
+// Retry attempts to perform an operation for x time
+func Retry(attempts int, min time.Duration, jitter bool, fn func() error) error {
+	b := &backoff.Backoff{Min: min, Factor: 1, Jitter: jitter}
 
-// New creates and returns an admission controller
-func New(c *Config) (*Admission, error) {
+	// @step: give it a go once before jumping in
+	for i := 0; i < attempts; i++ {
+		if err := fn(); err == nil {
+			return nil
+		}
 
-	return &Admission{}, nil
-}
+		time.Sleep(b.Duration())
+	}
 
-// health provides information on the health of the service
-func (a *Admission) health() ([]byte, error) {
-	return []byte("ok"), nil
-}
-
-// Run is responsible for starting the admission controller
-func (a *Admission) Run(ctc context.Context) error {
-
-	return nil
+	return errors.New("operation failed")
 }

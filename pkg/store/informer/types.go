@@ -32,18 +32,8 @@ type Config struct {
 	AddFunc func(schema.GroupVersionResource, metav1.Object)
 	// DeleteFunc is called when an object is being removed
 	DeleteFunc func(schema.GroupVersionResource, metav1.Object)
+	// ErrorFunc is called on an error from the informer
+	ErrorFunc func(schema.GroupVersionResource, error)
 	// UpdateFunc is called when an object has been updated - old / new
 	UpdateFunc func(schema.GroupVersionResource, metav1.Object, metav1.Object)
-	// ErrorCh is called on a error
-	ErrorCh chan error
-}
-
-// resourceInformer is a kubernetes resources informer
-type resourceInformer struct {
-	// informer is the underlining generic informer
-	informer informers.GenericInformer
-	// config is the configuration for the service
-	config *Config
-	// resourceVersion is the resource we are listening to
-	resourceVersion schema.GroupVersionResource
 }

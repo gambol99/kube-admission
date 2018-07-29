@@ -31,22 +31,16 @@ var (
 			Help: "The latency on delete operations to the store",
 		},
 	)
+	errorCounter = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Name: "store_error_counter",
+			Help: "A counter of the number of errors encountered by the store",
+		},
+	)
 	getLatency = prometheus.NewSummary(
 		prometheus.SummaryOpts{
 			Name: "get_latency_sec",
 			Help: "The latency on get operations to the store",
-		},
-	)
-	hasLatency = prometheus.NewSummary(
-		prometheus.SummaryOpts{
-			Name: "has_latency_sec",
-			Help: "The latency on has operations to the store",
-		},
-	)
-	listLatency = prometheus.NewSummary(
-		prometheus.SummaryOpts{
-			Name: "list_latency_sec",
-			Help: "The latency on list operations to the store",
 		},
 	)
 	setLatency = prometheus.NewSummary(
@@ -66,9 +60,8 @@ var (
 func init() {
 	prometheus.MustRegister(deleteCounter)
 	prometheus.MustRegister(deleteLatency)
+	prometheus.MustRegister(errorCounter)
 	prometheus.MustRegister(getLatency)
-	prometheus.MustRegister(hasLatency)
-	prometheus.MustRegister(listLatency)
 	prometheus.MustRegister(setLatency)
 	prometheus.MustRegister(updateCounter)
 }

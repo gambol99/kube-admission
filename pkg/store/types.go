@@ -17,8 +17,22 @@ limitations under the License.
 package store
 
 import (
+	"time"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
+)
+
+// queryType is the type of query
+type queryType int
+
+const (
+	// queryGet indicates a get query
+	queryGet queryType = iota
+	// queryHas indicats a exists query
+	queryHas
+	// queryList indicates a list query
+	quertList
 )
 
 // Store is the contract to the store
@@ -69,16 +83,18 @@ type Event struct {
 
 // Interface defines a list of action verbs
 type Interface interface {
+	// Within set a time limit for the objects i.e all object within the last 2 minutes
+	Within(time.Duration) Interface
 	// Delete removes a object from the store
-	Delete(string) (bool, error)
+	Delete(string) error
+	// Set sets and objects in the store
+	Set(string, metav1.Object) error
 	// Has checks if the resource exists in the store
 	Has(string) (bool, error)
 	// Get retrieves a resource from the store
-	Get(string) (metav1.Object, bool, error)
+	Get(string) (metav1.Object, error)
 	// List retrieves a list of resources from the store
 	List() ([]metav1.Object, error)
-	// Set adds a resource to the store
-	Set(string, metav1.Object) error
 	// Kind adds the api kind type to the request
 	Kind(string) Interface
 	// Namespace is used to set the namespace

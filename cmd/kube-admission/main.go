@@ -67,7 +67,7 @@ func main() {
 				Usage: "enable an admission authorizer, the format is name=config_path (i.e images=config.yaml)",
 			},
 			cli.StringSliceFlag{
-				Name:  "param",
+				Name:  "config",
 				Usage: "adding a configurable parameter to the controller (key=value)",
 			},
 			cli.StringFlag{
@@ -75,12 +75,6 @@ func main() {
 				Usage:  "namespace to create denial events (optional as we can try and discover) `NAME`",
 				EnvVar: "KUBE_NAMESPACE",
 				Value:  "kube-system",
-			},
-			cli.StringFlag{
-				Name:   "controller-name",
-				Usage:  "controller name also used as prefix in annotations `NAME`",
-				EnvVar: "CONTROLLER_NAME",
-				Value:  "kube-admission.io",
 			},
 			cli.BoolFlag{
 				Name:   "enable-logging",

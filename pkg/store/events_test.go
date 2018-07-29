@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gambol99/kube-admission/pkg/utils/informer"
+	"github.com/gambol99/kube-admission/pkg/store/informer"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
